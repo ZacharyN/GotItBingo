@@ -11,21 +11,47 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+from django.contrib.messages import constants as messages
+import mimetypes
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# General Configuration
+SECRET_KEY = config('SECRET_KEY')
+ENVIRONMENT = config('DJANGO_ENV')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-re8d)ht=+&c!f3-&c+hq8o!1*89p2s&=38!%k@rsisqdb82zni'
+# Development settings
+if ENVIRONMENT == 'development':
+    DEBUG = True
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    CSRF_COOKIE_SECURE = False
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Production settings
+elif ENVIRONMENT == 'production':
+    DEBUG = False
+    ALLOWED_HOSTS = ['gotitbingo.com']
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = '.gotitbingo.com'
+    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo.com']
 
-ALLOWED_HOSTS = []
+# Sandbox settings
+elif ENVIRONMENT == 'sandbox':
+    DEBUG = False
+    ALLOWED_HOSTS = ['gotitbingo-sandbox.hyperionhub.dev']
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = '.hyperionhub.dev'
+    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo-sandbox.hyperionhub.dev']
+
+# Test server settings
+elif ENVIRONMENT == 'test':
+    DEBUG = True
+    ALLOWED_HOSTS = ['gotitbingo.hyperionhub.dev']
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = 'gotitbingo.hyperionhub.dev'
+    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo.hyperionhub.dev']
 
 
 # Application definition
@@ -37,6 +63,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks',
+    'anymail',
+    'bingo',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +77,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.CheckPasswordResetMiddleware',
 ]
 
 ROOT_URLCONF = 'bingoCards.urls'
@@ -71,15 +102,51 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bingoCards.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database Configuration
+if ENVIRONMENT == 'production':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('PROD_DATABASE_NAME'),
+            'USER': config('PROD_DATABASE_USER'),
+            'PASSWORD': config('PROD_DATABASE_PASSWORD'),
+            'HOST': config('PROD_DATABASE_HOST'),
+            'PORT': config('PROD_DATABASE_PORT'),
+        }
     }
-}
+elif ENVIRONMENT == 'test':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('TEST_DATABASE_NAME', default='test_db'),
+            'USER': config('TEST_DATABASE_USER', default='test_user'),
+            'PASSWORD': config('TEST_DATABASE_PASSWORD', default='test_password'),
+            'HOST': config('TEST_DATABASE_HOST', default='localhost'),
+            'PORT': config('TEST_DATABASE_PORT', default='5432'),
+        }
+    }
+elif ENVIRONMENT == 'sandbox':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('SBX_DATABASE_NAME', default='test_db'),
+            'USER': config('SBX_DATABASE_USER', default='test_user'),
+            'PASSWORD': config('SBX_DATABASE_PASSWORD', default='test_password'),
+            'HOST': config('SBX_DATABASE_HOST', default='localhost'),
+            'PORT': config('SBX_DATABASE_PORT', default='5432'),
+        }
+    }
+elif ENVIRONMENT == 'development':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DEV_DATABASE_NAME', default='test_db'),
+            'USER': config('DEV_DATABASE_USER', default='test_user'),
+            'PASSWORD': config('DEV_DATABASE_PASSWORD', default='test_password'),
+            'HOST': config('DEV_DATABASE_HOST', default='localhost'),
+            'PORT': config('DEV_DATABASE_PORT', default='5433'),
+        }
+    }
 
 
 # Password validation
@@ -102,23 +169,36 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
+TIME_ZONE = 'America/Chicago'
 USE_TZ = True
+USE_L10N = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = 'static/'
+# Static files
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [str(BASE_DIR / 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Authentication
+AUTH_USER_MODEL = 'users.AppUser'
+
+# Login URL
+LOGIN_URL = 'users:login'
+
+# Login Redirection
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Email Configuration
+EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+ANYMAIL = {
+    "MAILJET_API_KEY": config('MAILJET_API_KEY'),
+    "MAILJET_SECRET_KEY": config('MAILJET_API_SECRET'),
+}
+
+DEFAULT_FROM_EMAIL = config('MAILJET_FROM_EMAIL')
+SERVER_EMAIL = config('MAILJET_FROM_EMAIL')
