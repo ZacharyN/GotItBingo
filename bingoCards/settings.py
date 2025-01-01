@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'axes'
     'widget_tweaks',
     'anymail',
     'bingo',
@@ -78,6 +79,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.CheckPasswordResetMiddleware',
+    'axes.middleware.AxesMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'bingoCards.urls'
@@ -167,6 +174,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Django Axes Configuration
+AXES_FAILURE_LIMIT = 5
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_COOLOFF_TIME = 1  # hours
+AXES_USE_USER_AGENT = True
+AXES_LOCKOUT_TEMPLATE = 'users/lockout.html'
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
