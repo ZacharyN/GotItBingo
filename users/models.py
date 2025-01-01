@@ -61,7 +61,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     bingo_teams = models.ManyToManyField(
         'bingo.Team',
         through='bingo.TeamMembership',
-        related_name='user_members',
+        related_name='users',
         blank=True
     )
 

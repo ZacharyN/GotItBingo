@@ -15,7 +15,7 @@ class Team(models.Model):
     members = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='TeamMembership',
-        related_name='bingo_teams',
+        related_name='member_teams',
         verbose_name=_('members')
     )
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)

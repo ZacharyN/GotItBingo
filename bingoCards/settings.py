@@ -49,10 +49,7 @@ if ENVIRONMENT in ['test', 'production']:
 
     if ENVIRONMENT == 'production':
         CSRF_COOKIE_DOMAIN = '.gotitbingo.com'
-        CSRF_TRUSTED_ORIGINS = [
-            'https://gotitbingo.com',
-            'https://*.gotitbingo.com'
-        ]
+        CSRF_TRUSTED_ORIGINS = ['https://gotitbingo.com']
         SECURE_HSTS_SECONDS = 31536000
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
@@ -129,23 +126,67 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
+# Password Validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'OPTIONS': {
+            'user_attributes': ('username', 'email', 'first_name', 'last_name'),
+            'max_similarity': 0.7,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,
+        }
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
+
+
+# Authentication URLs
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'home'  # TODO: Update this
+LOGOUT_REDIRECT_URL = 'users:login'
+
+
+# Session Configuration
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+if ENVIRONMENT in ['test', 'production']:
+    SESSION_COOKIE_DOMAIN = CSRF_COOKIE_DOMAIN
+
+
+# Email Configuration
+EMAIL_BACKEND = 'anymail.backends.mailjet.EmailBackend'
+
+# Anymail Configuration
+ANYMAIL = {
+    'MAILJET_API_KEY': config('MAILJET_API_KEY'),
+    'MAILJET_SECRET_KEY': config('MAILJET_API_SECRET'),
+}
+
+DEFAULT_FROM_EMAIL = config('MAILJET_FROM_EMAIL', default='webmaster@localhost')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Used for error notifications
+
+
+# Authentication
+AUTH_USER_MODEL = 'users.AppUser'
+
 
 # Django Axes Configuration
 AXES_FAILURE_LIMIT = 5
@@ -153,37 +194,20 @@ AXES_LOCK_OUT_AT_FAILURE = True
 AXES_COOLOFF_TIME = lambda request: timedelta(hours=2)
 AXES_LOCKOUT_TEMPLATE = 'users/lockout.html'
 
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/Chicago'
 USE_TZ = True
 USE_L10N = True
 
-# Static files
+
+# Static Files
+STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [str(BASE_DIR / 'static')]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
+# Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Authentication
-AUTH_USER_MODEL = 'users.AppUser'
-
-# Login URL
-LOGIN_URL = 'users:login'
-
-# Login Redirection
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
-
-# Email Configuration
-EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
-ANYMAIL = {
-    "MAILJET_API_KEY": config('MAILJET_API_KEY'),
-    "MAILJET_SECRET_KEY": config('MAILJET_API_SECRET'),
-}
-
-DEFAULT_FROM_EMAIL = config('MAILJET_FROM_EMAIL')
-SERVER_EMAIL = config('MAILJET_FROM_EMAIL')

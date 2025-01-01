@@ -10,7 +10,7 @@ class AppUserAdmin(UserAdmin):
         ('Personal info', {'fields': ('first_name', 'last_name', 'username')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'start_date', 'end_date')}),
-        ('Membership', {'fields': ('member_type',)}),
+        # ('Membership', {'fields': ('member_type',)}),
     )
     add_fieldsets = (
         (None, {
@@ -19,9 +19,9 @@ class AppUserAdmin(UserAdmin):
         }),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-        ('Membership', {'fields': ('member_type',)}),
+        # ('Membership', {'fields': ('member_type',)}),
     )
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'member_type', 'is_active')
+    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'is_active')
     search_fields = ('email', 'first_name', 'last_name', 'username')
     ordering = ('email',)
 
