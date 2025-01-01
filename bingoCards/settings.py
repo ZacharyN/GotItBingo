@@ -22,40 +22,47 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # General Configuration
 SECRET_KEY = config('SECRET_KEY')
 ENVIRONMENT = config('DJANGO_ENV')
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
 
-# Development settings
+
+# Debug and Allowed Hosts
 if ENVIRONMENT == 'development':
     DEBUG = True
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-    CSRF_COOKIE_SECURE = False
-
-# Production settings
-elif ENVIRONMENT == 'production':
-    DEBUG = False
-    ALLOWED_HOSTS = ['gotitbingo.com']
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_DOMAIN = '.gotitbingo.com'
-    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo.com']
-
-# Sandbox settings
-elif ENVIRONMENT == 'sandbox':
-    DEBUG = False
-    ALLOWED_HOSTS = ['gotitbingo-sandbox.hyperionhub.dev']
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_DOMAIN = '.hyperionhub.dev'
-    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo-sandbox.hyperionhub.dev']
-
-# Test server settings
 elif ENVIRONMENT == 'test':
     DEBUG = True
-    ALLOWED_HOSTS = ['gotitbingo.hyperionhub.dev']
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_DOMAIN = 'gotitbingo.hyperionhub.dev'
-    CSRF_TRUSTED_ORIGINS = ['https://gotitbingo.hyperionhub.dev']
+    ALLOWED_HOSTS = ['icsmanager.ncffapps.dev']
+elif ENVIRONMENT == 'production':
+    DEBUG = False
+    ALLOWED_HOSTS = ['icsmanager.communityportals.org']
+
+
+# Security Configuration
+CSRF_COOKIE_SECURE = ENVIRONMENT != 'development'
+CSRF_USE_SESSIONS = True
+
+if ENVIRONMENT in ['test', 'production']:
+    SECURE_SSL_REDIRECT = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+    if ENVIRONMENT == 'production':
+        CSRF_COOKIE_DOMAIN = '.gotitbingo.com'
+        CSRF_TRUSTED_ORIGINS = [
+            'https://gotitbingo.com',
+            'https://*.gotitbingo.com'
+        ]
+        SECURE_HSTS_SECONDS = 31536000
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+    elif ENVIRONMENT == 'test':
+        CSRF_COOKIE_DOMAIN = 'gotitbingo.hyperionhub.dev'
+        CSRF_TRUSTED_ORIGINS = ['https://hyperionhub.dev']
+        SECURE_HSTS_SECONDS = 3600  # 1 hour
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -110,50 +117,16 @@ WSGI_APPLICATION = 'bingoCards.wsgi.application'
 
 
 # Database Configuration
-if ENVIRONMENT == 'production':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('PROD_DATABASE_NAME'),
-            'USER': config('PROD_DATABASE_USER'),
-            'PASSWORD': config('PROD_DATABASE_PASSWORD'),
-            'HOST': config('PROD_DATABASE_HOST'),
-            'PORT': config('PROD_DATABASE_PORT'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config(f'{ENVIRONMENT.upper()}_DATABASE_NAME', default='db_name'),
+        'USER': config(f'{ENVIRONMENT.upper()}_DATABASE_USER', default='db_user'),
+        'PASSWORD': config(f'{ENVIRONMENT.upper()}_DATABASE_PASSWORD', default='db_password'),
+        'HOST': config(f'{ENVIRONMENT.upper()}_DATABASE_HOST', default='localhost'),
+        'PORT': config(f'{ENVIRONMENT.upper()}_DATABASE_PORT', default='5432'),
     }
-elif ENVIRONMENT == 'test':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('TEST_DATABASE_NAME', default='test_db'),
-            'USER': config('TEST_DATABASE_USER', default='test_user'),
-            'PASSWORD': config('TEST_DATABASE_PASSWORD', default='test_password'),
-            'HOST': config('TEST_DATABASE_HOST', default='localhost'),
-            'PORT': config('TEST_DATABASE_PORT', default='5432'),
-        }
-    }
-elif ENVIRONMENT == 'sandbox':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('SBX_DATABASE_NAME', default='test_db'),
-            'USER': config('SBX_DATABASE_USER', default='test_user'),
-            'PASSWORD': config('SBX_DATABASE_PASSWORD', default='test_password'),
-            'HOST': config('SBX_DATABASE_HOST', default='localhost'),
-            'PORT': config('SBX_DATABASE_PORT', default='5432'),
-        }
-    }
-elif ENVIRONMENT == 'development':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DEV_DATABASE_NAME', default='test_db'),
-            'USER': config('DEV_DATABASE_USER', default='test_user'),
-            'PASSWORD': config('DEV_DATABASE_PASSWORD', default='test_password'),
-            'HOST': config('DEV_DATABASE_HOST', default='localhost'),
-            'PORT': config('DEV_DATABASE_PORT', default='5433'),
-        }
-    }
+}
 
 
 # Password validation
