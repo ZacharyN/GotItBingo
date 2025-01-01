@@ -1,5 +1,4 @@
 # Django
-*.log
 *.pot
 *.pyc
 __pycache__
@@ -12,12 +11,11 @@ media
 
 # Backup files
 *.bak
+*.swp
+*.tmp
 
 # If you are using PyCharm
 .idea/
-
-# If you are using macOS
-.DS_Store
 
 # Node.js
 /node_modules/
@@ -33,3 +31,25 @@ yarn-error.log*
 /frontend/public/manifest.json
 /frontend/node_modules/
 /frontend/dist/
+
+# Python virtual environments
+/.venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+*.pid
+*.seed
+*.cover
+*.coverage
+*.cov
