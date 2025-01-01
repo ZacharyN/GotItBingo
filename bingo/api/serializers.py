@@ -19,8 +19,10 @@ class TeamMembershipSerializer(serializers.ModelSerializer):
 class PredictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prediction
-        fields = ['id', 'position', 'category', 'prediction_text',
-                  'target_period', 'status', 'verified_by', 'verified_at']
+        fields = [
+            'id', 'position', 'category', 'prediction_text',
+            'target_period', 'status', 'verified_by', 'verified_at'
+        ]
         read_only_fields = ['verified_by', 'verified_at']
 
 
@@ -30,8 +32,8 @@ class BingoCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = BingoCard
         fields = ['id', 'user', 'team', 'year', 'predictions',
-                  'created_at', 'is_active']
-        read_only_fields = ['created_at']
+                  'created_at', 'is_finalized']
+        read_only_fields = ['created_at', 'user']
 
 
 class VerificationEvidenceSerializer(serializers.ModelSerializer):
