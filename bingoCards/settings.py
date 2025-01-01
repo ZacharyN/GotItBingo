@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 from django.contrib.messages import constants as messages
@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'axes'
+    'axes',
     'widget_tweaks',
     'anymail',
     'bingo',
@@ -177,8 +177,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Django Axes Configuration
 AXES_FAILURE_LIMIT = 5
 AXES_LOCK_OUT_AT_FAILURE = True
-AXES_COOLOFF_TIME = 1  # hours
-AXES_USE_USER_AGENT = True
+AXES_COOLOFF_TIME = lambda request: timedelta(hours=2)
 AXES_LOCKOUT_TEMPLATE = 'users/lockout.html'
 
 # Internationalization
